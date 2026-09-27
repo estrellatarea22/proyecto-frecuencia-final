@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pen</title>
+  </head>
+  <body>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FRECUENCIA - Reproductor Musical con Mascotita Lumi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-purple: #5b2a82;
+      --color-cyan: #00a896;
+      --color-orange: #f05a28;
+      --color-magenta: #a81b5a;
+      --color-black: #000000;
+      --color-white: #ffffff;
+
+      --app-bg: #121216;
+      --app-card-bg: #1a1a22;
+      --app-text: #ffffff;
+      --accent-color: var(--color-cyan);
+
+      --lumi-glow-1: #FF8C00;
+      --lumi-glow-2: #FFD700;
+    }
+
+    [data-theme="cyber-neon"] {
+      --app-bg: #05050d;
+      --app-card-bg: #0d0d1a;
+      --app-text: #00ffff;
+      --accent-color: #ff007f;
+    }
+
+    [data-theme="pastel"] {
+      --app-bg: #2b2636;
+      --app-card-bg: #3b354a;
+      --app-text: #f3e8ee;
+      --accent-color: #ffb3ba;
+    }
+
+    [data-theme="synthwave"] {
+      --app-bg: #1a0933;
+      --app-card-bg: #2a114d;
+      --app-text: #ff71ce;
+      --accent-color: #01cdfe;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #08080a;
+      font-family: 'Montserrat', sans-serif;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--accent-color);
+      border-radius: 4px;
+    }
+
+    .phone-container {
+      width: 100%;
+      max-width: 410px;
+      height: 840px;
+      max-height: 96vh;
+      background: var(--app-bg);
+      background-size: cover;
+      background-position: center;
+      border-radius: 44px;
+      border: 8px solid #22222a;
+      box-shadow: 0 0 50px rgba(91, 42, 130, 0.35), 0 20px 40px rgba(0, 0, 0, 0.8);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      color: var(--app-text);
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .bg-brand-purple { background: linear-gradient(135deg, var(--color-purple) 0%, #3a1a54 100%); }
+    .bg-brand-cyan { background: linear-gradient(135deg, var(--color-cyan) 0%, #00665c 100%); }
+    .bg-brand-orange { background: linear-gradient(135deg, var(--color-orange) 0%, #a83813 100%); }
+    .bg-brand-magenta { background: linear-gradient(135deg, var(--color-magenta) 0%, #610d32 100%); }
+
+    @keyframes floatMascot {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-7px) rotate(1.5deg); }
+    }
+    .mascot-float {
+      animation: floatMascot 3.5s ease-in-out infinite;
+    }
+
+    @keyframes antennaPulse {
+      0%, 100% { filter: drop-shadow(0 0 4px var(--lumi-glow-1)) drop-shadow(0 0 8px var(--lumi-glow-1)); }
+      50% { filter: drop-shadow(0 0 12px var(--lumi-glow-2)) drop-shadow(0 0 18px var(--lumi-glow-1)); }
+    }
+    .antenna-glow {
+      animation: antennaPulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes musicPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .mascot-beat {
+      animation: musicPulse 0.6s infinite ease-in-out;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { filter: drop-shadow(0 0 10px rgba(0, 168, 150, 0.6)); }
+      50% { filter: drop-shadow(0 0 20px rgba(240, 90, 40, 0.8)); }
+    }
+    .active-eq {
+      animation: pulseGlow 3s infinite ease-in-out;
+    }
+
+    .speech-bubble {
+      position: relative;
+      background: linear-gradient(135deg, #1e1b2e 0%, #151421 100%);
+      border: 1.5px solid rgba(0, 168, 150, 0.5);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.7), 0 0 15px rgba(0, 168, 150, 0.2);
+    }
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      right: 24px;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid #151421;
+    }
+
+    .palette-swatch {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .palette-swatch:hover {
+      transform: scale(1.15);
+    }
+
+    .lyric-line {
+      transition: all 0.3s ease;
+      opacity: 0.4;
+      transform: scale(0.95);
+    }
+    .lyric-line.active {
+      opacity: 1;
+      color: #00A896;
+      font-weight: 800;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+
+  <audio id="real-audio-player" class="hidden" preload="auto"></audio>
+
+  <div class="phone-container" id="phone-app">
+    
+    <!-- PERFIL / SIDEBAR MODAL -->
+    <div id="profile-drawer" class="absolute inset-0 bg-[#0c0c10]/95 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col p-5 overflow-y-auto backdrop-blur-lg">
+      <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-3">
+        <h2 class="text-lg font-black text-white flex items-center gap-2">
+          <span>👤</span> Mi Perfil
+        </h2>
+        <button onclick="toggleProfileDrawer()" class="p-2 text-gray-400 hover:text-white bg-gray-800/60 rounded-full">
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
+
+      <div class="flex flex-col items-center mb-6">
+        <div class="relative group">
+          <img id="user-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" class="w-24 h-24 rounded-full border-4 border-[#00A896] object-cover shadow-lg" alt="Avatar">
+          <label for="avatar-input" class="absolute bottom-0 right-0 bg-[#F05A28] p-2 rounded-full cursor-pointer hover:scale-110 transition shadow-md">
+            <svg class="w-4 h-4 fill-current text-white" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          </label>
+          <input type="file" id="avatar-input" accept="image/*" class="hidden" onchange="updateAvatar(event)">
+        </div>
+        <input type="text" id="user-name-input" value="Melómano VIP" onchange="updateUserName(this.value)" class="mt-3 text-center bg-transparent border-b border-gray-700 focus:border-[#00A896] font-bold text-lg text-white outline-none">
+        <span id="user-handle" class="text-xs text-gray-400 mt-1">@frecuencia_user</span>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 bg-[#181820] p-3 rounded-2xl mb-6 text-center border border-gray-800">
+        <div>
+          <span id="stat-likes" class="block font-black text-[#00A896] text-base">0</span>
+          <span class="text-[9px] text-gray-400 uppercase font-bold">Me Gusta</span>
+        </div>
+        <div>
+          <span id="stat-playlists" class="block font-black text-[#F05A28] text-base">0</span>
+          <span class="text-[9px] text-gray-400 uppercase font-bold">Playlists</span>
+        </div>
+        <div>
+          <span id="stat-artists" class="block font-black text-[#A81B5A] text-base">0</span>
+          <span class="text-[9px] text-gray-400 uppercase font-bold">Artistas</span>
+        </div>
+      </div>
+
+      <div class="space-y-2 flex-1">
+        <button onclick="toggleProfileDrawer(); switchTab('favoritos');" class="w-full flex items-center justify-between p-3 rounded-xl bg-gray-800/40 hover:bg-gray-800 text-left transition">
+          <div class="flex items-center gap-3">
+            <span class="text-yellow-400 text-lg">★</span>
+            <span class="text-xs font-bold text-gray-200">Canciones Guardadas</span>
+          </div>
+          <svg class="w-4 h-4 text-gray-500 fill-current" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </button>
+
+        <button onclick="toggleProfileDrawer(); switchTab('playlists');" class="w-full flex items-center justify-between p-3 rounded-xl bg-gray-800/40 hover:bg-gray-800 text-left transition">
+          <div class="flex items-center gap-3">
+            <span class="text-cyan-400 text-lg">🎵</span>
+            <span class="text-xs font-bold text-gray-200">Mis Playlists</span>
+          </div>
+          <svg class="w-4 h-4 text-gray-500 fill-current" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </button>
+
+        <button onclick="toggleProfileDrawer(); switchTab('artistas');" class="w-full flex items-center justify-between p-3 rounded-xl bg-gray-800/40 hover:bg-gray-800 text-left transition">
+          <div class="flex items-center gap-3">
+            <span class="text-purple-400 text-lg">🎤</span>
+            <span class="text-xs font-bold text-gray-200">Artistas Seguidos</span>
+          </div>
+          <svg class="w-4 h-4 text-gray-500 fill-current" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </button>
+
+        <button onclick="toggleProfileDrawer(); switchTab('albumes');" class="w-full flex items-center justify-between p-3 rounded-xl bg-gray-800/40 hover:bg-gray-800 text-left transition">
+          <div class="flex items-center gap-3">
+            <span class="text-pink-400 text-lg">CD</span>
+            <span class="text-xs font-bold text-gray-200">Álbumes</span>
+          </div>
+          <svg class="w-4 h-4 text-gray-500 fill-current" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </button>
+      </div>
+
+      <div class="pt-4 border-t border-gray-800 text-center">
+        <p class="text-[10px] text-gray-500">FRECUENCIA App • v2.0</p>
+      </div>
+    </div>
+
+    <!-- Header Bar -->
+    <header class="bg-black/40 backdrop-blur-md pt-3 px-6 pb-2 flex-shrink-0 border-b border-gray-800/40 z-20">
+      <div class="flex justify-between items-center text-xs text-gray-400 font-semibold mb-2">
+        <span id="current-time">12:00</span>
+        <div class="w-20 h-4 bg-black rounded-full flex justify-center items-center gap-1">
+          <div class="w-2 h-2 rounded-full bg-blue-900/50"></div>
+          <div class="w-10 h-1 bg-gray-900 rounded-full"></div>
+        </div>
+        <div class="flex gap-1.5 items-center text-xs">
+          <span>5G</span>
+          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.2 12 12l7.65 7.2 1.38-1.59C22.26 16.07 23 14.12 23 12c0-4.97-4.03-9-9-9z"/></svg>
+          <div class="w-5 h-2.5 border border-gray-400 rounded-sm p-0.5 flex items-center">
+            <div class="bg-green-400 h-full w-full rounded-xs"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center py-1">
+        <button onclick="toggleProfileDrawer()" class="relative flex items-center gap-2 group focus:outline-none">
+          <img id="header-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" class="w-8 h-8 rounded-full border-2 border-[#00A896] object-cover" alt="Header Avatar">
+        </button>
+
+        <div class="flex items-center gap-2">
+          <svg class="w-24 h-7" viewBox="0 0 300 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 40 Q 25 20, 40 40 T 70 40 T 100 10 T 130 70 T 160 20 T 190 60 T 220 35 T 250 40" stroke="#00A896" stroke-width="6" stroke-linecap="round" fill="none"/>
+            <path d="M10 40 Q 25 60, 40 40 T 70 40 T 100 70 T 130 10 T 160 60 T 190 20 T 220 45 T 250 40" stroke="#F05A28" stroke-width="3" stroke-linecap="round" opacity="0.7" fill="none"/>
+            <text x="135" y="75" font-family="'Montserrat', sans-serif" font-weight="900" font-size="18" fill="#FFFFFF" text-anchor="middle" letter-spacing="4">FRECUENCIA</text>
+          </svg>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <button onclick="toggleThemeModal()" class="p-1.5 bg-gray-800/80 rounded-full text-white hover:bg-gray-700 transition" title="Personalizar Tema y Fondo">
+            🎨
+          </button>
+
+          <label for="header-file-input" class="cursor-pointer text-[10px] bg-gradient-to-r from-[#00A896] to-[#5A2A82] text-white font-extrabold px-2.5 py-1.5 rounded-full border border-cyan-400/30 hover:opacity-90 transition flex items-center gap-1 shadow-md">
+            <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            Subir
+          </label>
+          <input type="file" id="header-file-input" accept="audio/*" multiple class="hidden" onchange="handleFileUpload(event)">
+        </div>
+      </div>
+    </header>
+
+    <!-- MODAL CONFIGURACIÓN TEMA Y FONDO -->
+    <div id="theme-modal" class="absolute inset-0 bg-black/80 z-50 hidden flex flex-col p-5 overflow-y-auto backdrop-blur-md">
+      <div class="flex justify-between items-center mb-4 border-b border-gray-800 pb-2">
+        <h3 class="text-sm font-black text-white flex items-center gap-2">🎨 Selector de Temas y Fondo</h3>
+        <button onclick="toggleThemeModal()" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
+      </div>
+
+      <div class="mb-5 space-y-2">
+        <span class="text-xs font-bold text-gray-300 block">Paleta de Colores Predeterminada:</span>
+        <div class="flex items-center gap-2">
+          <div class="palette-swatch" style="background-color: var(--color-purple)" title="Morado #5b2a82" onclick="setAccentColor('var(--color-purple)')"></div>
+          <div class="palette-swatch" style="background-color: var(--color-cyan)" title="Turquesa #00a896" onclick="setAccentColor('var(--color-cyan)')"></div>
+          <div class="palette-swatch" style="background-color: var(--color-orange)" title="Naranja #f05a28" onclick="setAccentColor('var(--color-orange)')"></div>
+          <div class="palette-swatch" style="background-color: var(--color-magenta)" title="Magenta #a81b5a" onclick="setAccentColor('var(--color-magenta)')"></div>
+          <div class="palette-swatch" style="background-color: var(--color-black)" title="Negro #000000" onclick="setAccentColor('var(--color-black)')"></div>
+          <div class="palette-swatch" style="background-color: var(--color-white)" title="Blanco #ffffff" onclick="setAccentColor('var(--color-white)')"></div>
+        </div>
+      </div>
+
+      <div class="mb-5 space-y-2">
+        <span class="text-xs font-bold text-gray-300 block">Estilo de Interfaz:</span>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <button onclick="applyPresetTheme('default')" class="bg-gray-800 p-2 rounded-xl text-white font-semibold hover:bg-gray-700">Frecuencia Original</button>
+          <button onclick="applyPresetTheme('cyber-neon')" class="bg-gray-800 p-2 rounded-xl text-cyan-400 font-semibold hover:bg-gray-700">Neón Cibernético</button>
+          <button onclick="applyPresetTheme('pastel')" class="bg-gray-800 p-2 rounded-xl text-pink-300 font-semibold hover:bg-gray-700">Pastel</button>
+          <button onclick="applyPresetTheme('synthwave')" class="bg-gray-800 p-2 rounded-xl text-purple-300 font-semibold hover:bg-gray-700">Synthwave</button>
+        </div>
+      </div>
+
+      <div class="space-y-3 border-t border-gray-800 pt-3">
+        <span class="text-xs font-bold text-gray-300 block">Opciones de Fondo:</span>
+
+        <div class="flex items-center justify-between bg-gray-800/50 p-2.5 rounded-xl">
+          <span class="text-xs text-gray-200 font-medium">Modo Claro / Oscuro</span>
+          <button onclick="toggleDarkMode()" class="text-xs bg-gray-700 text-white px-3 py-1 rounded-lg">Alternar</button>
+        </div>
+
+        <div class="flex items-center justify-between bg-gray-800/50 p-2.5 rounded-xl">
+          <span class="text-xs text-gray-200 font-medium">Color de Fondo Sólido:</span>
+          <input type="color" id="bg-color-picker" value="#121216" onchange="setCustomBgColor(this.value)" class="w-8 h-8 rounded-lg cursor-pointer bg-transparent">
+        </div>
+
+        <div class="bg-gray-800/50 p-2.5 rounded-xl space-y-2">
+          <span class="text-xs text-gray-200 font-medium block">Imagen de Fondo Personalizada:</span>
+          <input type="file" id="bg-image-input" accept="image/*" class="text-xs text-gray-400" onchange="setCustomBgImage(event)">
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Scrollable Section -->
+    <main class="flex-1 overflow-y-auto px-5 py-4 space-y-6 relative" id="main-content">
+
+      <!-- TAB 1: INICIO -->
+      <section id="tab-inicio" class="tab-pane space-y-5">
+        <div>
+          <span class="text-xs font-bold text-[#00A896] uppercase tracking-wider">Tu Asistente Musical Activo</span>
+          <h1 class="text-2xl font-black text-white">Explorar Frecuencias</h1>
+        </div>
+
+        <div class="bg-gradient-to-br from-[#1d1429] via-[#151522] to-[#0d1822] p-4 rounded-3xl border border-purple-500/30 shadow-xl space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🎲</span>
+              <h3 class="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-400 to-orange-400">Modo Frecuencia</h3>
+            </div>
+            <span class="text-[9px] bg-purple-900/60 text-purple-300 font-bold px-2 py-0.5 rounded-full border border-purple-500/30">Ánimo & Ambiente</span>
+          </div>
+          <p class="text-[11px] text-gray-300 leading-tight">Elige tu estado actual o ambiente y Lumi ajustará la música para ti:</p>
+          
+          <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+            <button onclick="activateMood('Lluvia')" class="flex items-center gap-2 bg-[#1a1c2b] hover:bg-[#25283d] p-2.5 rounded-xl border border-blue-500/20 text-blue-300 font-semibold transition active:scale-95 text-left">
+              <span class="text-base">🌧️</span>
+              <div>
+                <span class="block text-[11px] font-bold">Lluvia</span>
+                <span class="text-[9px] text-gray-400">Calma & Gotas</span>
+              </div>
+            </button>
+
+            <button onclick="activateMood('Noche')" class="flex items-center gap-2 bg-[#1c182d] hover:bg-[#282242] p-2.5 rounded-xl border border-indigo-500/20 text-indigo-300 font-semibold transition active:scale-95 text-left">
+              <span class="text-base">🌙</span>
+              <div>
+                <span class="block text-[11px] font-bold">Noche</span>
+                <span class="text-[9px] text-gray-400">Vibra Nocturna</span>
+              </div>
+            </button>
+
+            <button onclick="activateMood('Desamor')" class="flex items-center gap-2 bg-[#2d1822] hover:bg-[#402030] p-2.5 rounded-xl border border-pink-500/20 text-pink-300 font-semibold transition active:scale-95 text-left">
+              <span class="text-base">💔</span>
+              <div>
+                <span class="block text-[11px] font-bold">Desamor</span>
+                <span class="text-[9px] text-gray-400">Duela Poquito</span>
+              </div>
+            </button>
+
+            <button onclick="activateMood('Energia')" class="flex items-center gap-2 bg-[#2b2114] hover:bg-[#3d2f1d] p-2.5 rounded-xl border border-amber-500/20 text-amber-300 font-semibold transition active:scale-95 text-left">
+              <span class="text-base">⚡</span>
+              <div>
+                <span class="block text-[11px] font-bold">Energía</span>
+                <span class="text-[9px] text-gray-400">Ritmo Arriba</span>
+              </div>
+            </button>
+
+            <button onclick="activateMood('Creatividad')" class="flex items-center gap-2 bg-[#142828] hover:bg-[#1d3a3a] p-2.5 rounded-xl border border-teal-500/20 text-teal-300 font-semibold transition active:scale-95 text-left">
+              <span class="text-base">🎨</span>
+              <div>
+                <span class="block text-[11px] font-bold">Creatividad</span>
+                <span class="text-[9px] text-gray-400">Enfoque & Flow</span>
+              </div>
+            </button>
+
+            <button onclick="activateMood('Nostalgia')" class="flex items-center gap-2 bg-[#281a2d] hover:bg-[#392540] p-2.5 rounded-xl border border-purple-500/20 text-purple-300 font-semibold transition active:scale-95 text-left">
+              <span class="text-base">🫂</span>
+              <div>
+                <span class="block text-[11px] font-bold">Nostalgia</span>
+                <span class="text-[9px] text-gray-400">Recuerdos</span>
+              </div>
+            </button>
+
+            <button onclick="activateMood('Caminatas')" class="flex items-center gap-2 bg-[#182328] hover:bg-[#22323a] p-2.5 rounded-xl border border-gray-500/20 text-gray-300 font-semibold transition active:scale-95 text-left">
+              <span class="text-base">🖤</span>
+              <div>
+                <span class="block text-[11px] font-bold">Caminatas</span>
+                <span class="text-[9px] text-gray-400">Paso Urbano</span>
+              </div>
+            </button>
+
+            <button onclick="activateMood('Amor')" class="flex items-center gap-2 bg-[#2d1820] hover:bg-[#42222f] p-2.5 rounded-xl border border-rose-500/20 text-rose-300 font-semibold transition active:scale-95 text-left">
+              <span class="text-base">💖</span>
+              <div>
+                <span class="block text-[11px] font-bold">Amor</span>
+                <span class="text-[9px] text-gray-400">Romance Puro</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-sm font-bold text-gray-300 mb-3">Categorías</h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div onclick="filterCategory('Pop / Latina')" class="bg-brand-magenta p-4 rounded-2xl cursor-pointer hover:opacity-90 transition flex flex-col justify-between h-24 shadow-md relative overflow-hidden border border-pink-400/20">
+              <span class="font-extrabold text-sm text-white">Pop & Latina</span>
+              <span class="text-[10px] text-pink-200">Mon Laferte & Más</span>
+              <div class="absolute -right-2 -bottom-2 text-pink-300/20 text-4xl font-black">latin</div>
+            </div>
+            <div onclick="filterCategory('Archivos Locales')" class="bg-brand-cyan p-4 rounded-2xl cursor-pointer hover:opacity-90 transition flex flex-col justify-between h-24 shadow-md relative overflow-hidden border border-teal-400/20">
+              <span class="font-extrabold text-sm text-white">Archivos Locales</span>
+              <span class="text-[10px] text-teal-100">Tus Archivos MP3</span>
+              <div class="absolute -right-2 -bottom-2 text-teal-300/20 text-4xl font-black">files</div>
+            </div>
+            <div onclick="filterCategory('Sintetizadores')" class="bg-brand-purple p-4 rounded-2xl cursor-pointer hover:opacity-90 transition flex flex-col justify-between h-24 shadow-md relative overflow-hidden border border-purple-400/20">
+              <span class="font-extrabold text-sm text-white">Sintetizadores</span>
+              <span class="text-[10px] text-purple-200">Síntesis Analógica</span>
+              <div class="absolute -right-2 -bottom-2 text-purple-300/20 text-4xl font-black">synth</div>
+            </div>
+            <div onclick="filterCategory('Ambient')" class="bg-brand-orange p-4 rounded-2xl cursor-pointer hover:opacity-90 transition flex flex-col justify-between h-24 shadow-md relative overflow-hidden border border-orange-400/20">
+              <span class="font-extrabold text-sm text-white">Chill & Ambient</span>
+              <span class="text-[10px] text-orange-200">Ondas Relajantes</span>
+              <div class="absolute -right-2 -bottom-2 text-orange-300/20 text-4xl font-black">ambient</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-sm font-bold text-gray-300 mb-3">Pistas Disponibles</h3>
+          <div class="space-y-2" id="home-track-list"></div>
+        </div>
+      </section>
+
+      <!-- TAB 2: REPRODUCTOR -->
+      <section id="tab-reproductor" class="tab-pane hidden space-y-4 flex flex-col justify-between min-h-full pb-4">
+        <div class="text-center pt-2 relative">
+          <span class="text-[10px] uppercase font-black tracking-widest text-[#00A896]">REPRODUCIENDO FRECUENCIA</span>
+          <h2 id="full-genre" class="text-xs text-gray-400 mt-0.5">Pop / Latina</h2>
+
+          <button id="btn-star-like" onclick="toggleCurrentTrackLike()" class="absolute right-2 top-2 p-2 text-gray-500 hover:text-yellow-400 transition" title="Guardar en Favoritos">
+            <svg id="svg-star-like" class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          </button>
+        </div>
+
+        <div class="relative flex justify-center items-center my-1">
+          <div class="w-60 h-60 rounded-3xl bg-gradient-to-tr from-[#1c1c24] via-[#22222e] to-[#17171d] border border-gray-700/50 shadow-2xl flex flex-col justify-center items-center p-3 relative overflow-hidden active-eq">
+            <div id="visualizer-glow" class="absolute inset-0 bg-gradient-to-br from-[#A81B5A]/30 via-[#00A896]/20 to-[#F05A28]/30 blur-xl opacity-60"></div>
+            <canvas id="canvas-eq" width="220" height="130" class="z-10 w-full h-32"></canvas>
+            <div class="z-10 mt-1 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#00A896] animate-pulse"></span>
+              <span id="canvas-freq-tag" class="text-[10px] font-mono text-cyan-300">Mon Laferte • Real Audio</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- LECTOR DE LETRAS DE CANCIONES (.LRC) -->
+        <div class="bg-[#181822] border border-gray-800 rounded-2xl p-3 flex flex-col items-center space-y-2">
+          <div class="flex items-center justify-between w-full border-b border-gray-800 pb-1.5">
+            <span class="text-[10px] font-extrabold uppercase text-gray-400 flex items-center gap-1">
+              📜 Letras Sincronizadas (.lrc)
+            </span>
+            <label for="lrc-file-input" class="cursor-pointer text-[9px] bg-gray-800 hover:bg-gray-700 text-cyan-400 border border-cyan-500/30 font-bold px-2 py-0.5 rounded-lg transition">
+              Cargar .LRC
+            </label>
+            <input type="file" id="lrc-file-input" accept=".lrc,.txt" class="hidden" onchange="handleLrcUpload(event)">
+          </div>
+          <div id="lyrics-container" class="w-full h-20 overflow-y-auto text-center space-y-1.5 py-1 px-2 scroll-smooth">
+            <p class="text-xs text-gray-500 italic">Sube un archivo .lrc para sincronizar la letra en vivo</p>
+          </div>
+        </div>
+
+        <div class="text-center space-y-0.5 px-4">
+          <h1 id="full-title" class="text-xl font-black text-white tracking-wide truncate">Que Sí</h1>
+          <p id="full-artist" class="text-sm font-semibold text-[#00A896]">Mon Laferte</p>
+        </div>
+
+        <div class="space-y-1.5 px-2">
+          <div id="progress-container" onclick="seekAudio(event)" class="w-full h-2 bg-gray-800 rounded-full cursor-pointer relative overflow-hidden group">
+            <div id="progress-bar" class="h-full bg-gradient-to-r from-[#00A896] via-[#F05A28] to-[#A81B5A] rounded-full w-0 transition-all duration-100"></div>
+          </div>
+          <div class="flex justify-between text-[11px] font-mono text-gray-400">
+            <span id="time-current">0:00</span>
+            <span id="time-duration">0:00</span>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center px-4 py-1">
+          <button onclick="toggleRandomTrack()" class="text-gray-400 hover:text-white transition" title="Aleatorio">
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+          </button>
+
+          <button onclick="prevTrack()" class="p-3 bg-gray-800/80 hover:bg-gray-700 rounded-full text-white transition active:scale-90">
+            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+          </button>
+
+          <button onclick="togglePlayPause()" id="btn-full-play" class="p-5 bg-gradient-to-r from-[#00A896] to-[#F05A28] text-white rounded-full shadow-lg shadow-cyan-500/30 transition transform hover:scale-105 active:scale-95">
+            <svg id="svg-full-play" class="w-7 h-7 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+
+          <button onclick="nextTrack()" class="p-3 bg-gray-800/80 hover:bg-gray-700 rounded-full text-white transition active:scale-90">
+            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+          </button>
+
+          <button id="btn-loop" onclick="toggleLoop()" class="text-gray-400 hover:text-cyan-400 transition" title="Repetir">
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- TAB 3: BUSCAR -->
+      <section id="tab-buscar" class="tab-pane hidden space-y-4">
+        <h1 class="text-xl font-extrabold text-white">Buscador de Frecuencias</h1>
+        
+        <div class="relative">
+          <input type="text" id="search-input" onkeyup="handleSearch()" placeholder="Buscar canciones, Mon Laferte, sintetizadores..." class="w-full bg-[#1c1c24] text-white text-xs rounded-2xl pl-10 pr-4 py-3.5 border border-gray-700/60 focus:outline-none focus:border-[#00A896] transition">
+          <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 fill-current" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </div>
+
+        <div class="flex gap-2 overflow-x-auto pb-1 text-xs">
+          <button onclick="filterCategory('all')" class="bg-[#00A896] text-white px-3 py-1.5 rounded-full font-semibold flex-shrink-0">Todos</button>
+          <button onclick="filterCategory('Pop / Latina')" class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded-full font-semibold flex-shrink-0">Pop / Latina</button>
+          <button onclick="filterCategory('Archivos Locales')" class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded-full font-semibold flex-shrink-0">Archivos Locales</button>
+          <button onclick="filterCategory('Sintetizadores')" class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded-full font-semibold flex-shrink-0">Sintetizadores</button>
+        </div>
+
+        <div class="space-y-2 pt-2" id="search-results-list"></div>
+      </section>
+
+      <!-- TAB 4: BIBLIOTECA -->
+      <section id="tab-biblioteca" class="tab-pane hidden space-y-4">
+        <div class="flex justify-between items-center">
+          <h1 class="text-xl font-extrabold text-white">Tu Biblioteca</h1>
+          <span class="text-xs bg-purple-900/50 text-purple-300 px-2.5 py-1 rounded-full border border-purple-500/30 font-mono" id="library-count">0 Pistas</span>
+        </div>
+
+        <div class="p-5 bg-gradient-to-br from-[#1a1a22] to-[#252533] border-2 border-dashed border-[#00A896]/50 rounded-3xl text-center space-y-3 shadow-md">
+          <div class="w-12 h-12 bg-[#00A896]/20 rounded-full flex items-center justify-center mx-auto text-[#00A896]">
+            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+          </div>
+          <div>
+            <p class="text-xs text-white font-bold">¿Quieres añadir tu propia música?</p>
+            <p class="text-[10px] text-gray-400 mt-0.5">Selecciona archivos MP3, WAV, AAC o FLAC de tu dispositivo</p>
+          </div>
+          <label for="lib-file-input" class="inline-block bg-[#00A896] hover:bg-[#008f80] active:scale-95 text-white text-xs font-extrabold px-5 py-2.5 rounded-full cursor-pointer transition shadow-md">
+            Seleccionar Audio Local
+          </label>
+          <input type="file" id="lib-file-input" accept="audio/*" multiple class="hidden" onchange="handleFileUpload(event)">
+        </div>
+
+        <div class="space-y-2" id="library-track-list"></div>
+      </section>
+
+      <!-- TAB 5: FAVORITOS -->
+      <section id="tab-favoritos" class="tab-pane hidden space-y-4">
+        <div class="flex items-center gap-2">
+          <span class="text-yellow-400 text-2xl">★</span>
+          <div>
+            <h1 class="text-xl font-extrabold text-white">Canciones Me Gusta</h1>
+            <p class="text-xs text-gray-400">Tus pistas marcadas con estrella</p>
+          </div>
+        </div>
+        <div class="space-y-2" id="favorites-track-list"></div>
+      </section>
+
+      <!-- TAB 6: PLAYLISTS -->
+      <section id="tab-playlists" class="tab-pane hidden space-y-4">
+        <div class="flex justify-between items-center">
+          <h1 class="text-xl font-extrabold text-white">Mis Playlists</h1>
+          <button onclick="createNewPlaylistPrompt()" class="text-xs bg-[#F05A28] text-white px-3 py-1.5 rounded-full font-bold shadow hover:opacity-90">
+            + Crear Playlist
+          </button>
+        </div>
+        <div id="playlists-container" class="space-y-3"></div>
+      </section>
+
+      <!-- TAB 7: ARTISTAS -->
+      <section id="tab-artistas" class="tab-pane hidden space-y-4">
+        <h1 class="text-xl font-extrabold text-white">Artistas</h1>
+        <div id="artists-container" class="grid grid-cols-2 gap-3"></div>
+      </section>
+
+      <!-- TAB 8: ÁLBUMES -->
+      <section id="tab-albumes" class="tab-pane hidden space-y-4">
+        <h1 class="text-xl font-extrabold text-white">Álbumes</h1>
+        <div id="albums-container" class="grid grid-cols-2 gap-3"></div>
+      </section>
+
+    </main>
+
+    <!-- MASCOTA INTERACTIVA "LUMI" -->
+    <div id="mascot-widget-container" class="absolute bottom-20 right-4 z-40 flex flex-col items-end pointer-events-auto">
+      <div id="mascot-bubble" class="speech-bubble mb-2 mr-1 p-3.5 rounded-2xl text-xs max-w-[250px] text-white shadow-2xl transition-all duration-300 transform scale-100 opacity-100">
+        <div class="flex items-center gap-1.5 mb-1 border-b border-gray-700/50 pb-1">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span class="font-extrabold text-[11px] text-cyan-300 tracking-wide uppercase">Lumi</span>
+          <button onclick="startVoiceRecognition()" id="btn-voice-cmd" class="ml-auto bg-gray-800 hover:bg-cyan-600 p-1 rounded-full text-white transition" title="Hablar con Lumi">
+            🎤
+          </button>
+        </div>
+        
+        <p id="mascot-text" class="text-[11px] leading-relaxed text-gray-200">
+          ¡Hola! Soy <b>Lumi</b> 🎧✨ Sube tus canciones y se quedarán guardadas para siempre.
+        </p>
+
+        <!-- TEMPORIZADOR DE SUEÑO DE LUMI -->
+        <div class="mt-2 pt-2 border-t border-gray-800/80">
+          <div class="flex items-center justify-between text-[10px] text-indigo-300 font-bold mb-1">
+            <span>🌙 Temporizador de Sueño</span>
+            <span id="sleep-timer-status" class="text-[9px] text-gray-400 font-mono">Off</span>
+          </div>
+          <div class="grid grid-cols-3 gap-1">
+            <button onclick="setSleepTimer(15)" class="bg-indigo-900/40 hover:bg-indigo-800/60 border border-indigo-500/30 text-indigo-200 text-[9px] py-1 rounded-lg font-bold transition">15m</button>
+            <button onclick="setSleepTimer(30)" class="bg-indigo-900/40 hover:bg-indigo-800/60 border border-indigo-500/30 text-indigo-200 text-[9px] py-1 rounded-lg font-bold transition">30m</button>
+            <button onclick="setSleepTimer(60)" class="bg-indigo-900/40 hover:bg-indigo-800/60 border border-indigo-500/30 text-indigo-200 text-[9px] py-1 rounded-lg font-bold transition">60m</button>
+          </div>
+        </div>
+
+        <div class="mt-2 pt-1 border-t border-gray-800 flex flex-col gap-1">
+          <button onclick="askRecommendation()" class="bg-[#00A896]/20 hover:bg-[#00A896]/40 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold py-1 px-2.5 rounded-xl transition flex items-center gap-1 text-left">
+            <span>🎲</span> Recomiéndame una canción
+          </button>
+          <button onclick="askAboutCurrentTrack()" class="bg-[#A81B5A]/20 hover:bg-[#A81B5A]/40 text-pink-300 border border-pink-500/30 text-[10px] font-bold py-1 px-2.5 rounded-xl transition flex items-center gap-1 text-left">
+            <span>📖</span> Háblame de esta canción
+          </button>
+        </div>
+      </div>
+
+      <button onclick="toggleMascotBubble()" id="mascot-avatar-btn" class="mascot-float relative group cursor-pointer focus:outline-none" title="Toca a Lumi">
+        <div id="lumi-outer-glow" class="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 rounded-full blur-sm opacity-70 group-hover:opacity-100 transition duration-300"></div>
+        <div id="lumi-frame-border" class="relative w-16 h-16 bg-[#0a0a0f] rounded-full border-2 border-amber-400/80 shadow-2xl overflow-hidden flex items-center justify-center p-1 transition-colors duration-500">
+          <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-md" id="svg-lumi">
+            <defs>
+              <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#181328" />
+                <stop offset="60%" stop-color="#0c0a14" />
+                <stop offset="100%" stop-color="#2a1236" />
+              </linearGradient>
+              <linearGradient id="earInner" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#5c1d63" />
+                <stop offset="100%" stop-color="#1a0b24" />
+              </linearGradient>
+              <radialGradient id="bulbGlow" cx="50%" cy="50%" r="50%">
+                <stop id="bulb-stop1" offset="0%" stop-color="#FFF5C0" />
+                <stop id="bulb-stop2" offset="40%" stop-color="#FF9E00" />
+                <stop id="bulb-stop3" offset="100%" stop-color="#E04000" />
+              </radialGradient>
+              <linearGradient id="headphoneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop id="hp-stop1" offset="0%" stop-color="#00D2FF" />
+                <stop id="hp-stop2" offset="50%" stop-color="#928DFF" />
+                <stop id="hp-stop3" offset="100%" stop-color="#FF5E62" />
+              </linearGradient>
+            </defs>
+            <path d="M80 65 Q 60 30, 55 15" stroke="#111" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <path d="M120 65 Q 140 30, 145 15" stroke="#111" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <circle cx="55" cy="15" r="9" fill="url(#bulbGlow)" class="antenna-glow"/>
+            <circle cx="145" cy="15" r="9" fill="url(#bulbGlow)" class="antenna-glow"/>
+            <path d="M30 85 C 10 30, 45 15, 75 55 Z" fill="url(#bodyGrad)" stroke="#2b2038" stroke-width="2"/>
+            <path d="M170 85 C 190 30, 155 15, 125 55 Z" fill="url(#bodyGrad)" stroke="#2b2038" stroke-width="2"/>
+            <path d="M38 78 C 22 40, 48 28, 70 58 Z" fill="url(#earInner)"/>
+            <path d="M162 78 C 178 40, 152 28, 130 58 Z" fill="url(#earInner)"/>
+            <ellipse cx="100" cy="155" rx="35" ry="30" fill="url(#bodyGrad)" />
+            <ellipse cx="100" cy="95" rx="48" ry="42" fill="url(#bodyGrad)" />
+            <path d="M52 80 A 50 50 0 0 1 148 80" stroke="url(#headphoneGrad)" stroke-width="6" fill="none" stroke-linecap="round"/>
+            <rect x="42" y="75" width="14" height="30" rx="7" fill="url(#headphoneGrad)" class="mascot-beat-target"/>
+            <rect x="144" y="75" width="14" height="30" rx="7" fill="url(#headphoneGrad)" class="mascot-beat-target"/>
+
+            <ellipse id="lumi-eye-left" cx="78" cy="98" rx="15" ry="17" fill="#030206" />
+            <ellipse id="lumi-eye-right" cx="122" cy="98" rx="15" ry="17" fill="#030206" />
+            <g id="lumi-sparkles">
+              <path d="M78 88 L80 95 L87 97 L80 99 L78 106 L76 99 L69 97 L76 95 Z" fill="#FFFFFF"/>
+              <path d="M122 88 L124 95 L131 97 L124 99 L122 106 L120 99 L113 97 L120 95 Z" fill="#FFFFFF"/>
+            </g>
+            <path id="lumi-mouth" d="M96 112 Q 100 115, 104 112" stroke="#6b5b7b" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </button>
+    </div>
+
+    <!-- Mini-Player Overlay -->
+    <div id="mini-player" onclick="switchTab('reproductor')" class="bg-black/60 backdrop-blur-md border-t border-b border-gray-800/80 px-4 py-2.5 flex items-center justify-between cursor-pointer hover:bg-black/80 transition flex-shrink-0 z-20">
+      <div class="flex items-center gap-3 overflow-hidden">
+        <div id="mini-cover" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#A81B5A] to-[#00A896] flex justify-center items-center flex-shrink-0 shadow-md">
+          <svg class="w-5 h-5 text-white animate-spin" style="animation-duration: 6s;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <div class="overflow-hidden">
+          <h4 id="mini-title" class="text-xs font-bold text-white truncate">Que Sí</h4>
+          <p id="mini-artist" class="text-[10px] text-[#00A896] truncate">Mon Laferte</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2" onclick="event.stopPropagation()">
+        <button onclick="togglePlayPause()" id="btn-mini-play" class="w-9 h-9 bg-[#00A896] text-white rounded-full flex justify-center items-center shadow-md active:scale-90 transition">
+          <svg id="svg-mini-play" class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button onclick="nextTrack()" class="text-gray-400 hover:text-white p-1">
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bg-black/80 backdrop-blur-md px-2 py-2 border-t border-gray-800/50 flex justify-around items-center flex-shrink-0 z-20">
+      <button onclick="switchTab('inicio')" id="nav-inicio" class="nav-btn flex flex-col items-center gap-1 text-[#00A896] transition">
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span class="text-[9px] font-bold">Inicio</span>
+      </button>
+
+      <button onclick="switchTab('reproductor')" id="nav-reproductor" class="nav-btn flex flex-col items-center gap-1 text-gray-400 hover:text-white transition">
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        <span class="text-[9px] font-bold">Reproductor</span>
+      </button>
+
+      <button onclick="switchTab('favoritos')" id="nav-favoritos" class="nav-btn flex flex-col items-center gap-1 text-gray-400 hover:text-white transition">
+        <span class="text-base leading-none">★</span>
+        <span class="text-[9px] font-bold">Favoritos</span>
+      </button>
+
+      <button onclick="switchTab('playlists')" id="nav-playlists" class="nav-btn flex flex-col items-center gap-1 text-gray-400 hover:text-white transition">
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M4 10h12v2H4zm0-4h12v2H4zm0 8h8v2H4zm10 0v6l5-3z"/></svg>
+        <span class="text-[9px] font-bold">Playlists</span>
+      </button>
+
+      <button onclick="switchTab('biblioteca')" id="nav-biblioteca" class="nav-btn flex flex-col items-center gap-1 text-gray-400 hover:text-white transition">
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+        <span class="text-[9px] font-bold">Biblioteca</span>
+      </button>
+    </nav>
+  </div>
+
+  <script>
+    const TRACKS = [
+      { 
+        id: 0, 
+        title: "Que Sí", 
+        artist: "Mon Laferte", 
+        album: "Norma",
+        category: "Pop / Latina", 
+        moods: ["Desamor", "Nostalgia", "Amor"],
+        type: "audio", 
+        url: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=romantic-acoustic-latin-112199.mp3", 
+        duration: 165, 
+        color: "from-[#A81B5A] to-[#F05A28]",
+        liked: false,
+        lumiInfo: "¡Esta canción de Mon Laferte es pura pasión! Me encanta la guitarra y la carga emocional que transmite."
+      },
+      { 
+        id: 1, 
+        title: "Onda Portadora", 
+        artist: "Frecuencia Modulada", 
+        album: "Sintetizadores Vol. 1",
+        category: "Sintetizadores", 
+        moods: ["Noche", "Creatividad", "Caminatas"],
+        freq: 432, 
+        type: "sawtooth", 
+        duration: 30, 
+        color: "from-[#5A2A82] to-[#00A896]",
+        liked: false,
+        lumiInfo: "¡Un tema de sintetizador afinado en 432Hz! Mis antenitas captan estas ondas sonoras directamente del espacio sideral. 🌌"
+      },
+      { 
+        id: 2, 
+        title: "Resonancia Alfa", 
+        artist: "NeuroSound Studio", 
+        album: "Relajación Mente",
+        category: "Ambient", 
+        moods: ["Lluvia", "Noche", "Creatividad"],
+        freq: 528, 
+        type: "sine", 
+        duration: 45, 
+        color: "from-[#00A896] to-[#00665c]",
+        liked: false,
+        lumiInfo: "Frecuencia de 528Hz ideal para concentrarse y relajarse. Es como un masaje para el cerebro alienígena. 🧠✨"
+      },
+      { 
+        id: 3, 
+        title: "Sub-Oscilación 808", 
+        artist: "Bass Modulation", 
+        album: "Deep Waves",
+        category: "Bass", 
+        moods: ["Energia", "Caminatas"],
+        freq: 110, 
+        type: "triangle", 
+        duration: 35, 
+        color: "from-[#F05A28] to-[#a83813]",
+        liked: false,
+        lumiInfo: "¡Siente retumbar esos graves! Mis audífonos vibran al ritmo del bajo profundo de 110Hz."
+      },
+      { 
+        id: 4, 
+        title: "Pulso Magenta", 
+        artist: "Sintetizador X", 
+        album: "Retro Arcade",
+        category: "Pulso", 
+        moods: ["Energia", "Creatividad", "Nostalgia"],
+        freq: 320, 
+        type: "square", 
+        duration: 28, 
+        color: "from-[#A81B5A] to-[#5A2A82]",
+        liked: false,
+        lumiInfo: "Onda cuadrada retro estilo arcade vintage. ¡Me recuerda a los videojuegos de mi planeta natal!"
+      }
+    ];
+
+    let PLAYLISTS = [
+      { id: 101, name: "Mis Favoritas del Mes", tracks: [0, 1] },
+      { id: 102, name: "Para Relax & Chill", tracks: [2] }
+    ];
+
+    const MOOD_DATA = {
+      "Lluvia": {
+        phrase: "Detecté que está lloviendo o necesitas paz... 🌧️ Pon la mente en pausa con esta melodía tranquila.",
+        category: "Ambient",
+        glow: ["#00BFFF", "#1E90FF"],
+        hp: ["#00FFFF", "#0080FF", "#0000FF"],
+        mouth: "M94 114 Q 100 110, 106 114",
+        border: "border-blue-400"
+      },
+      "Noche": {
+        phrase: "Detecté modo nocturno activado... 🌙 Una frecuencia ideal para contemplar las estrellas.",
+        category: "Sintetizadores",
+        glow: ["#9370DB", "#8A2BE2"],
+        hp: ["#7B68EE", "#4B0082", "#9400D3"],
+        mouth: "M95 113 Q 100 117, 105 113",
+        border: "border-purple-500"
+      },
+      "Desamor": {
+        phrase: "Detecté que necesitas una canción que duela poquito... 💔 Tranqui, Lumi está aquí contigo.",
+        category: "Pop / Latina",
+        glow: ["#FF1493", "#C71585"],
+        hp: ["#FF69B4", "#DB7093", "#8B008B"],
+        mouth: "M95 116 Q 100 111, 105 116",
+        border: "border-pink-500"
+      },
+      "Energia": {
+        phrase: "Detecté que te falta una chispa de potencia... ⚡ ¡Subamos las vibraciones al máximo!",
+        category: "Bass",
+        glow: ["#FFD700", "#FF4500"],
+        hp: ["#FF8C00", "#FFD700", "#FF0000"],
+        mouth: "M92 110 Q 100 120, 108 110",
+        border: "border-amber-400"
+      },
+      "Creatividad": {
+        phrase: "Detecté que necesitas entrar en el Flow... 🎨 ¡Sintonizando ondas para potenciar tus ideas!",
+        category: "Sintetizadores",
+        glow: ["#00FA9A", "#00CED1"],
+        hp: ["#00FF7F", "#20B2AA", "#008B8B"],
+        mouth: "M95 111 Q 100 118, 105 111",
+        border: "border-teal-400"
+      },
+      "Nostalgia": {
+        phrase: "Detecté un viajecito al pasado... 🫂 Abre espacio para los recuerdos con esta melodía.",
+        category: "Pulso",
+        glow: ["#BA55D3", "#D8BFD8"],
+        hp: ["#EE82EE", "#DA70D6", "#8A2BE2"],
+        mouth: "M96 113 L 104 113",
+        border: "border-purple-300"
+      },
+      "Caminatas": {
+        phrase: "Detecté que andas dando una caminata... 🖤 Esta pista se adapta perfectamente a tus pasos.",
+        category: "Sintetizadores",
+        glow: ["#708090", "#2F4F4F"],
+        hp: ["#A9A9A9", "#778899", "#36454F"],
+        mouth: "M94 112 Q 100 116, 106 112",
+        border: "border-gray-400"
+      },
+      "Amor": {
+        phrase: "Detecté mariposas en el estómago... 💖 Prepárate para vibrar alto con esta canción llena de sentimiento.",
+        category: "Pop / Latina",
+        glow: ["#FF69B4", "#FF1493"],
+        hp: ["#FFB6C1", "#FF1493", "#C71585"],
+        mouth: "M93 111 Q 100 120, 107 111",
+        border: "border-rose-400"
+      }
+    };
+
+    const MASCOT_PLAYING_REACTIONS = [
+      "¡Qué buena canción! 🔥🎶",
+      "¡Esta parte es increíble! 💜✨",
+      "¡Me encanta este ritmo! 🕺📻",
+      "¡Siente la frecuencia! 🎧⚡",
+      "¡Mis antenas están vibrando de emoción! 🪐💫",
+      "¡Subamos el volumen! 🚀🎵",
+      "¡Esta vibra traspasa galaxias! 🌌🛸",
+      "¡Mis circuitos están felices! 🤖💖",
+      "¡Alineando frecuencias intergalácticas! 📡✨",
+      "¿Sabías que esta melodía recarga mis baterías? ⚡😊",
+      "¡Un ritmo estelar para tu día! 🌟🎧"
+    ];
+
+    let currentTrackIndex = 0;
+    let isPlaying = false;
+    let isLooping = false;
+    let currentTime = 0;
+    let playInterval = null;
+    let reactionTimer = null;
+
+    let sleepTimerTimeout = null;
+    let sleepTimerCountdown = null;
+    let currentLyrics = [];
+
+    let realAudio = null;
+    let audioCtx = null;
+    let oscillator = null;
+    let gainNode = null;
+    let analyser = null;
+    let sourceNode = null;
+    let isDarkMode = true;
+
+    // BASE DE DATOS Y PERSISTENCIA (INDEXEDDB)
+    let db;
+
+    function initMusicDatabase() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open("FrecuenciaMusicDB", 1);
+        request.onupgradeneeded = (e) => {
+          const database = e.target.result;
+          if (!database.objectStoreNames.contains("songs")) {
+            database.createObjectStore("songs", { keyPath: "id" });
+          }
+        };
+        request.onsuccess = (e) => {
+          db = e.target.result;
+          resolve(db);
+        };
+        request.onerror = (e) => reject(e);
+      });
+    }
+
+    async function loadStoredTracks() {
+      if (!db) await initMusicDatabase();
+      const savedMetadata = localStorage.getItem("frecuencia_local_tracks");
+      if (!savedMetadata) return;
+
+      const localTracks = JSON.parse(savedMetadata);
+
+      for (const track of localTracks) {
+        const transaction = db.transaction(["songs"], "readonly");
+        const store = transaction.objectStore("songs");
+        const request = store.get(track.id);
+
+        request.onsuccess = (e) => {
+          const record = e.target.result;
+          if (record && record.fileData) {
+            track.url = URL.createObjectURL(record.fileData);
+            TRACKS.push(track);
+            renderTrackLists();
+            renderArtists();
+            renderAlbums();
+            updateUserStats();
+          }
+        };
+      }
+    }
+
+    function saveLocalTracksMetadata() {
+      const localTracks = TRACKS.filter(t => t.isLocal);
+      localStorage.setItem("frecuencia_local_tracks", JSON.stringify(localTracks));
+    }
+
+    async function handleFileUpload(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+
+      if (!db) await initMusicDatabase();
+
+      let firstAddedIndex = null;
+
+      for (const file of Array.from(files)) {
+        const newId = Date.now() + Math.floor(Math.random() * 1000);
+        const fileURL = URL.createObjectURL(file);
+
+        const newTrack = {
+          id: newId,
+          title: file.name.replace(/\.[^/.]+$/, ""),
+          artist: "Archivo Local",
+          album: "Subidas Recientes",
+          category: "Archivos Locales",
+          moods: ["Caminatas", "Creatividad"],
+          type: "audio",
+          url: fileURL,
+          duration: 180,
+          color: "from-[#00A896] to-[#5A2A82]",
+          liked: false,
+          isLocal: true,
+          lumiInfo: "¡Esta canción está guardada de forma permanente en tu dispositivo! 💾🎧"
+        };
+
+        const transaction = db.transaction(["songs"], "readwrite");
+        const store = transaction.objectStore("songs");
+        store.put({ id: newId, fileData: file });
+
+        TRACKS.push(newTrack);
+        if (firstAddedIndex === null) firstAddedIndex = TRACKS.length - 1;
+      }
+
+      saveLocalTracksMetadata();
+      renderTrackLists();
+      renderArtists();
+      renderAlbums();
+      updateUserStats();
+
+      if (firstAddedIndex !== null) {
+        playTrack(firstAddedIndex);
+        speakLumi("¡Canción guardada permanentemente! Ya no la perderás al salir de la página. 🚀🎶");
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      realAudio = document.getElementById('real-audio-player');
+
+      await initMusicDatabase();
+      await loadStoredTracks();
+
+      realAudio.addEventListener('timeupdate', () => {
+        if (TRACKS[currentTrackIndex] && TRACKS[currentTrackIndex].type === 'audio') {
+          currentTime = Math.floor(realAudio.currentTime);
+          updateProgressUI();
+          updateSyncLyrics(realAudio.currentTime);
+        }
+      });
+
+      realAudio.addEventListener('ended', () => {
+        if (isLooping) {
+          realAudio.currentTime = 0;
+          realAudio.play();
+        } else {
+          nextTrack();
+        }
+      });
+
+      renderTrackLists();
+      renderFavorites();
+      renderPlaylists();
+      renderArtists();
+      renderAlbums();
+      updateTrackUI();
+      updateUserStats();
+      initCanvas();
+      updateClock();
+      setInterval(updateClock, 30000);
+    });
+
+    // --- MEJORA: TEMPORIZADOR DE SUEÑO DE LUMI ---
+    function setSleepTimer(minutes) {
+      if (sleepTimerTimeout) clearTimeout(sleepTimerTimeout);
+      if (sleepTimerCountdown) clearInterval(sleepTimerCountdown);
+
+      let totalSeconds = minutes * 60;
+      const statusElem = document.getElementById('sleep-timer-status');
+
+      speakLumi(`💤 Temporizador configurado a ${minutes} minutos. Lumi apagará la música cuando duermas.`);
+
+      sleepTimerCountdown = setInterval(() => {
+        totalSeconds--;
+        const m = Math.floor(totalSeconds / 60);
+        const s = totalSeconds % 60;
+        statusElem.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+
+        if (totalSeconds <= 0) {
+          clearInterval(sleepTimerCountdown);
+        }
+      }, 1000);
+
+      sleepTimerTimeout = setTimeout(() => {
+        if (isPlaying) {
+          pauseAudio();
+          speakLumi("🌙 Buenas noches... Lumi ha apagado la música para que descanses.");
+          statusElem.textContent = "Off";
+        }
+      }, minutes * 60 * 1000);
+    }
+
+    // --- MEJORA: COMANDOS DE VOZ CON WEB SPEECH API ---
+    function startVoiceRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (!SpeechRecognition) {
+        speakLumi("Tu navegador no soporta comandos de voz (Web Speech API). Pruebe con Google Chrome.");
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'es-ES';
+      recognition.interimResults = false;
+
+      const btn = document.getElementById('btn-voice-cmd');
+      btn.classList.add('bg-red-500', 'animate-pulse');
+
+      speakLumi("Escuchando tus comandos... 🎙️ (ej: 'Lumi, pausa', 'Siguiente canción', 'Modo oscuro')");
+
+      recognition.start();
+
+      recognition.onresult = (event) => {
+        btn.classList.remove('bg-red-500', 'animate-pulse');
+        const transcript = event.results[0][0].transcript.toLowerCase().trim();
+        speakLumi(`Escuché: "${transcript}" 🎧`);
+
+        if (transcript.includes('pausa') || transcript.includes('detener') || transcript.includes('para')) {
+          pauseAudio();
+        } else if (transcript.includes('reproducir') || transcript.includes('reproduce') || transcript.includes('play')) {
+          playAudio();
+        } else if (transcript.includes('siguiente')) {
+          nextTrack();
+        } else if (transcript.includes('anterior')) {
+          prevTrack();
+        } else if (transcript.includes('oscuro')) {
+          if(!isDarkMode) toggleDarkMode();
+          speakLumi("Modo oscuro activado 🌙");
+        } else if (transcript.includes('claro')) {
+          if(isDarkMode) toggleDarkMode();
+          speakLumi("Modo claro activado ☀️");
+        } else {
+          speakLumi(`No entendí "${transcript}". Intenta decir: "Siguiente canción" o "Lumi, pausa".`);
+        }
+      };
+
+      recognition.onerror = () => {
+        btn.classList.remove('bg-red-500', 'animate-pulse');
+        speakLumi("No pude escucharte bien. Intenta de nuevo.");
+      };
+
+      recognition.onend = () => {
+        btn.classList.remove('bg-red-500', 'animate-pulse');
+      };
+    }
+
+    // --- MEJORA: LECTOR DE LETRAS DE CANCIONES (.LRC) ---
+    function handleLrcUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        parseLrcContent(e.target.result);
+        speakLumi("¡Letras sincronizadas (.lrc) cargadas con éxito! 📜✨");
+      };
+      reader.readAsText(file);
+    }
+
+    function parseLrcContent(lrcText) {
+      const lines = lrcText.split('\n');
+      currentLyrics = [];
+      const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+
+      lines.forEach(line => {
+        const match = timeRegex.exec(line);
+        if (match) {
+          const minutes = parseInt(match[1]);
+          const seconds = parseInt(match[2]);
+          const time = minutes * 60 + seconds;
+          const text = line.replace(timeRegex, '').trim();
+          if (text) {
+            currentLyrics.push({ time, text });
+          }
+        }
+      });
+
+      currentLyrics.sort((a, b) => a.time - b.time);
+      renderLyricsList();
+    }
+
+    function renderLyricsList() {
+      const container = document.getElementById('lyrics-container');
+      if (currentLyrics.length === 0) {
+        container.innerHTML = `<p class="text-xs text-gray-500 italic">No se encontraron líneas sincronizadas.</p>`;
+        return;
+      }
+
+      container.innerHTML = currentLyrics.map((item, index) => 
+        `<p id="lyric-line-${index}" class="lyric-line text-xs py-0.5">${item.text}</p>`
+      ).join('');
+    }
+
+    function updateSyncLyrics(currentTimeSec) {
+      if (currentLyrics.length === 0) return;
+
+      let activeIndex = -1;
+      for (let i = 0; i < currentLyrics.length; i++) {
+        if (currentTimeSec >= currentLyrics[i].time) {
+          activeIndex = i;
+        } else {
+          break;
+        }
+      }
+
+      if (activeIndex !== -1) {
+        document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active'));
+        const activeElem = document.getElementById(`lyric-line-${activeIndex}`);
+        if (activeElem) {
+          activeElem.classList.add('active');
+          activeElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+
+    function updateLumiAppearance(moodKey) {
+      const data = MOOD_DATA[moodKey];
+      if (!data) return;
+
+      document.documentElement.style.setProperty('--lumi-glow-1', data.glow[0]);
+      document.documentElement.style.setProperty('--lumi-glow-2', data.glow[1]);
+
+      document.getElementById('bulb-stop1').setAttribute('stop-color', data.glow[0]);
+      document.getElementById('bulb-stop2').setAttribute('stop-color', data.glow[1]);
+      document.getElementById('bulb-stop3').setAttribute('stop-color', data.glow[0]);
+
+      document.getElementById('hp-stop1').setAttribute('stop-color', data.hp[0]);
+      document.getElementById('hp-stop2').setAttribute('stop-color', data.hp[1]);
+      document.getElementById('hp-stop3').setAttribute('stop-color', data.hp[2]);
+
+      const mouth = document.getElementById('lumi-mouth');
+      if (mouth) mouth.setAttribute('d', data.mouth);
+
+      const frame = document.getElementById('lumi-frame-border');
+      if (frame) {
+        frame.className = `relative w-16 h-16 bg-[#0a0a0f] rounded-full border-2 ${data.border} shadow-2xl overflow-hidden flex items-center justify-center p-1 transition-colors duration-500`;
+      }
+    }
+
+    function activateMood(moodKey) {
+      const data = MOOD_DATA[moodKey];
+      if (!data) return;
+
+      updateLumiAppearance(moodKey);
+
+      let matchingIndex = TRACKS.findIndex(t => t.moods && t.moods.includes(moodKey));
+      if (matchingIndex === -1) {
+        matchingIndex = TRACKS.findIndex(t => t.category === data.category);
+      }
+      if (matchingIndex === -1) {
+        matchingIndex = Math.floor(Math.random() * TRACKS.length);
+      }
+
+      speakLumi(data.phrase);
+      playTrack(matchingIndex);
+    }
+
+    function toggleThemeModal() {
+      document.getElementById('theme-modal').classList.toggle('hidden');
+    }
+
+    function setAccentColor(color) {
+      document.documentElement.style.setProperty('--accent-color', color);
+      speakLumi("¡Color de acento actualizado! 🎨✨ Mi sensor óptico lo aprueba.");
+    }
+
+    function applyPresetTheme(themeName) {
+      const app = document.getElementById('phone-app');
+      if (themeName === 'default') {
+        app.removeAttribute('data-theme');
+      } else {
+        app.setAttribute('data-theme', themeName);
+      }
+      speakLumi(`¡Tema cambiado a ${themeName}! 🚀 Mi interfaz brilla con nueva energía.`);
+    }
+
+    function toggleDarkMode() {
+      isDarkMode = !isDarkMode;
+      if (isDarkMode) {
+        document.documentElement.style.setProperty('--app-bg', '#121216');
+        document.documentElement.style.setProperty('--app-text', '#ffffff');
+      } else {
+        document.documentElement.style.setProperty('--app-bg', '#f0f2f5');
+        document.documentElement.style.setProperty('--app-text', '#111111');
+      }
+    }
+
+    function setCustomBgColor(color) {
+      document.getElementById('phone-app').style.backgroundImage = 'none';
+      document.documentElement.style.setProperty('--app-bg', color);
+    }
+
+    function setCustomBgImage(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        document.getElementById('phone-app').style.backgroundImage = `url('${url}')`;
+        speakLumi("¡Fondo de pantalla actualizado con tu imagen! 🖼️✨ Se ve increíble.");
+      }
+    }
+
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('current-time').textContent = `${hours}:${minutes}`;
+    }
+
+    function toggleProfileDrawer() {
+      document.getElementById('profile-drawer').classList.toggle('-translate-x-full');
+    }
+
+    function updateAvatar(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        document.getElementById('user-avatar').src = url;
+        document.getElementById('header-avatar').src = url;
+      }
+    }
+
+    function updateUserName(newName) {
+      if (newName.trim()) {
+        speakLumi(`¡Hola ${newName}! Un gusto personalizar tu perfil.`);
+      }
+    }
+
+    function updateUserStats() {
+      const likedCount = TRACKS.filter(t => t.liked).length;
+      document.getElementById('stat-likes').textContent = likedCount;
+      document.getElementById('stat-playlists').textContent = PLAYLISTS.length;
+
+      const artists = new Set(TRACKS.map(t => t.artist));
+      document.getElementById('stat-artists').textContent = artists.size;
+    }
+
+    function toggleCurrentTrackLike() {
+      const track = TRACKS[currentTrackIndex];
+      track.liked = !track.liked;
+      updateTrackUI();
+      renderFavorites();
+      updateUserStats();
+      if (track.liked) {
+        speakLumi(`¡Guardaste "${track.title}" en Favoritos! ★ Mis antenas celebran con un destello brillante.`);
+      }
+    }
+
+    function toggleLikeById(id, event) {
+      if(event) event.stopPropagation();
+      const track = TRACKS.find(t => t.id === id);
+      if (track) {
+        track.liked = !track.liked;
+        renderTrackLists();
+        renderFavorites();
+        updateTrackUI();
+        updateUserStats();
+      }
+    }
+
+    function initAudioEngine() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function startAudio(track) {
+      initAudioEngine();
+      stopAudio();
+
+      if (track.type === 'audio') {
+        realAudio.src = track.url;
+        realAudio.currentTime = currentTime;
+        realAudio.play().catch(err => console.log("Carga de reproducción iniciada:", err));
+
+        if (!sourceNode && audioCtx) {
+          try {
+            sourceNode = audioCtx.createMediaElementSource(realAudio);
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 64;
+            sourceNode.connect(analyser);
+            analyser.connect(audioCtx.destination);
+          } catch(e) {}
+        }
+      } else {
+        oscillator = audioCtx.createOscillator();
+        gainNode = audioCtx.createGain();
+        analyser = audioCtx.createAnalyser();
+
+        analyser.fftSize = 64;
+        oscillator.type = track.type || 'sine';
+        oscillator.frequency.setValueAtTime(track.freq, audioCtx.currentTime);
+
+        gainNode.gain.setValueAtTime(0.01, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.2);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        oscillator.start();
+
+        clearInterval(playInterval);
+        playInterval = setInterval(() => {
+          currentTime++;
+          if (currentTime >= track.duration) {
+            if (isLooping) {
+              currentTime = 0;
+            } else {
+              nextTrack();
+              return;
+            }
+          }
+          updateProgressUI();
+          updateSyncLyrics(currentTime);
+        }, 1000);
+      }
+
+      startMascotReactions();
+    }
+
+    function stopAudio() {
+      if (realAudio) {
+        realAudio.pause();
+      }
+      if (oscillator) {
+        try {
+          oscillator.stop();
+          oscillator.disconnect();
+        } catch(e) {}
+        oscillator = null;
+      }
+      clearInterval(playInterval);
+      clearInterval(reactionTimer);
+    }
+
+    function togglePlayPause() {
+      if (isPlaying) {
+        pauseAudio();
+      } else {
+        playAudio();
+      }
+    }
+
+    function playTrack(index) {
+      currentTrackIndex = index;
+      currentTime = 0;
+      updateTrackUI();
+      playAudio();
+    }
+
+    function playAudio() {
+      isPlaying = true;
+      const track = TRACKS[currentTrackIndex];
+      startAudio(track);
+      updateButtonsUI();
+      drawVisualizer();
+
+      document.getElementById('mascot-avatar-btn').classList.add('mascot-beat');
+    }
+
+    function pauseAudio() {
+      isPlaying = false;
+      stopAudio();
+      updateButtonsUI();
+      speakLumi("Pusiste pausa. ⏸️ Mis antenas descansarán un momento.");
+      document.getElementById('mascot-avatar-btn').classList.remove('mascot-beat');
+    }
+
+    function nextTrack() {
+      currentTrackIndex = (currentTrackIndex + 1) % TRACKS.length;
+      currentTime = 0;
+      updateTrackUI();
+      if (isPlaying) playAudio();
+    }
+
+    function prevTrack() {
+      currentTrackIndex = (currentTrackIndex - 1 + TRACKS.length) % TRACKS.length;
+      currentTime = 0;
+      updateTrackUI();
+      if (isPlaying) playAudio();
+    }
+
+    function toggleRandomTrack() {
+      const randomIndex = Math.floor(Math.random() * TRACKS.length);
+      playTrack(randomIndex);
+    }
+
+    function toggleLoop() {
+      isLooping = !isLooping;
+      const btn = document.getElementById('btn-loop');
+      btn.classList.toggle('text-cyan-400', isLooping);
+      btn.classList.toggle('text-gray-400', !isLooping);
+      speakLumi(isLooping ? "¡Repetición activada! 🔄" : "Repetición desactivada. 🎵");
+    }
+
+    function seekAudio(event) {
+      const container = document.getElementById('progress-container');
+      const rect = container.getBoundingClientRect();
+      const clickPosition = (event.clientX - rect.left) / rect.width;
+      const track = TRACKS[currentTrackIndex];
+
+      if (track.type === 'audio' && realAudio.duration) {
+        realAudio.currentTime = clickPosition * realAudio.duration;
+      } else {
+        currentTime = Math.floor(clickPosition * track.duration);
+        updateProgressUI();
+        updateSyncLyrics(currentTime);
+      }
+    }
+
+    function speakLumi(message) {
+      const bubble = document.getElementById('mascot-bubble');
+      const textElem = document.getElementById('mascot-text');
+
+      bubble.classList.remove('scale-100');
+      bubble.classList.add('scale-95');
+
+      setTimeout(() => {
+        textElem.innerHTML = message;
+        bubble.classList.remove('scale-95');
+        bubble.classList.add('scale-100', 'opacity-100');
+      }, 150);
+    }
+
+    function toggleMascotBubble() {
+      const bubble = document.getElementById('mascot-bubble');
+      if (bubble.classList.contains('opacity-0')) {
+        bubble.classList.remove('opacity-0', 'pointer-events-none', 'scale-90');
+        bubble.classList.add('opacity-100', 'scale-100');
+      } else {
+        bubble.classList.add('opacity-0', 'pointer-events-none', 'scale-90');
+        bubble.classList.remove('opacity-100', 'scale-100');
+      }
+    }
+
+    function startMascotReactions() {
+      clearInterval(reactionTimer);
+      reactionTimer = setInterval(() => {
+        if (isPlaying) {
+          const randomPhrase = MASCOT_PLAYING_REACTIONS[Math.floor(Math.random() * MASCOT_PLAYING_REACTIONS.length)];
+          speakLumi(randomPhrase);
+        }
+      }, 12000);
+    }
+
+    function askRecommendation() {
+      const randomIndex = Math.floor(Math.random() * TRACKS.length);
+      const track = TRACKS[randomIndex];
+      speakLumi(`Te recomiendo escuchar <b>"${track.title}"</b> de <i>${track.artist}</i>. 🌟`);
+      setTimeout(() => {
+        playTrack(randomIndex);
+      }, 1800);
+    }
+
+    function askAboutCurrentTrack() {
+      const track = TRACKS[currentTrackIndex];
+      const info = track.lumiInfo || `Estamos escuchando "${track.title}" de ${track.artist}.`;
+      speakLumi(info);
+    }
+
+    function updateTrackUI() {
+      const track = TRACKS[currentTrackIndex];
+      if(!track) return;
+
+      document.getElementById('full-title').textContent = track.title;
+      document.getElementById('full-artist').textContent = track.artist;
+      document.getElementById('full-genre').textContent = track.category;
+      document.getElementById('canvas-freq-tag').textContent = `${track.artist} • ${track.category}`;
+
+      document.getElementById('mini-title').textContent = track.title;
+      document.getElementById('mini-artist').textContent = track.artist;
+
+      const starBtn = document.getElementById('btn-star-like');
+      if (track.liked) {
+        starBtn.classList.add('text-yellow-400');
+        starBtn.classList.remove('text-gray-500');
+      } else {
+        starBtn.classList.remove('text-yellow-400');
+        starBtn.classList.add('text-gray-500');
+      }
+
+      updateProgressUI();
+    }
+
+    function updateProgressUI() {
+      const track = TRACKS[currentTrackIndex];
+      if(!track) return;
+      let duration = track.duration;
+
+      if (track.type === 'audio' && realAudio.duration) {
+        duration = realAudio.duration;
+      }
+
+      const progressPercent = (currentTime / duration) * 100;
+      document.getElementById('progress-bar').style.width = `${progressPercent || 0}%`;
+
+      document.getElementById('time-current').textContent = formatTime(currentTime);
+      document.getElementById('time-duration').textContent = formatTime(duration);
+    }
+
+    function updateButtonsUI() {
+      const playIcon = `<svg class="w-7 h-7 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+      const pauseIcon = `<svg class="w-7 h-7 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+      
+      const miniPlayIcon = `<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+      const miniPauseIcon = `<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+
+      document.getElementById('btn-full-play').innerHTML = isPlaying ? pauseIcon : playIcon;
+      document.getElementById('btn-mini-play').innerHTML = isPlaying ? miniPauseIcon : miniPlayIcon;
+    }
+
+    function formatTime(seconds) {
+      if (isNaN(seconds)) return "0:00";
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.add('hidden'));
+      const activePane = document.getElementById(`tab-${tabId}`);
+      if(activePane) activePane.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('text-[#00A896]');
+        btn.classList.add('text-gray-400');
+      });
+
+      const activeNav = document.getElementById(`nav-${tabId}`);
+      if (activeNav) {
+        activeNav.classList.add('text-[#00A896]');
+        activeNav.classList.remove('text-gray-400');
+      }
+
+      document.getElementById('main-content').scrollTop = 0;
+    }
+
+    function renderTrackLists() {
+      const homeList = document.getElementById('home-track-list');
+      const libraryList = document.getElementById('library-track-list');
+      const searchList = document.getElementById('search-results-list');
+
+      let html = '';
+      TRACKS.forEach((track, index) => {
+        html += `
+          <div onclick="playTrack(${index})" class="flex items-center justify-between p-2.5 rounded-2xl bg-[#1a1a22] hover:bg-[#23232e] cursor-pointer transition group border border-gray-800/40">
+            <div class="flex items-center gap-3 overflow-hidden">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr ${track.color} flex justify-center items-center text-white font-bold text-xs shadow-md flex-shrink-0">
+                🎵
+              </div>
+              <div class="overflow-hidden">
+                <h4 class="text-xs font-bold text-white group-hover:text-[#00A896] transition truncate">${track.title}</h4>
+                <p class="text-[10px] text-gray-400 truncate">${track.artist} • <span class="text-cyan-400/80">${track.category}</span></p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1">
+              <button onclick="toggleLikeById(${track.id}, event)" class="p-2 ${track.liked ? 'text-yellow-400' : 'text-gray-600 hover:text-gray-400'} transition">
+                ★
+              </button>
+              <button class="text-gray-500 group-hover:text-[#F05A28] p-2 transition flex-shrink-0">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      if(homeList) homeList.innerHTML = html;
+      if(libraryList) libraryList.innerHTML = html;
+      if(searchList) searchList.innerHTML = html;
+
+      const libCount = document.getElementById('library-count');
+      if(libCount) libCount.textContent = `${TRACKS.length} Pistas`;
+    }
+
+    function renderFavorites() {
+      const favList = document.getElementById('favorites-track-list');
+      const likedTracks = TRACKS.filter(t => t.liked);
+
+      if (likedTracks.length === 0) {
+        favList.innerHTML = `
+          <div class="text-center py-10 space-y-2">
+            <span class="text-4xl text-gray-600 block">★</span>
+            <p class="text-xs text-gray-400">No tienes canciones guardadas aún.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      likedTracks.forEach((track) => {
+        const trackIndex = TRACKS.findIndex(t => t.id === track.id);
+        html += `
+          <div onclick="playTrack(${trackIndex})" class="flex items-center justify-between p-2.5 rounded-2xl bg-[#1a1a22] hover:bg-[#23232e] cursor-pointer transition border border-yellow-500/20">
+            <div class="flex items-center gap-3 overflow-hidden">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr ${track.color} flex justify-center items-center text-white font-bold text-xs flex-shrink-0">
+                ★
+              </div>
+              <div class="overflow-hidden">
+                <h4 class="text-xs font-bold text-white truncate">${track.title}</h4>
+                <p class="text-[10px] text-gray-400 truncate">${track.artist}</p>
+              </div>
+            </div>
+            <button onclick="toggleLikeById(${track.id}, event)" class="p-2 text-yellow-400 hover:text-gray-500 transition">
+              ★
+            </button>
+          </div>
+        `;
+      });
+      favList.innerHTML = html;
+    }
+
+    function renderPlaylists() {
+      const container = document.getElementById('playlists-container');
+      if (PLAYLISTS.length === 0) {
+        container.innerHTML = `<p class="text-xs text-gray-500 text-center py-6">No has creado playlists aún.</p>`;
+        return;
+      }
+
+      let html = '';
+      PLAYLISTS.forEach(pl => {
+        html += `
+          <div class="bg-[#181820] p-3.5 rounded-2xl border border-gray-800 space-y-2">
+            <div class="flex justify-between items-center">
+              <h3 class="font-extrabold text-sm text-cyan-300 flex items-center gap-1.5">
+                <span>🎵</span> ${pl.name}
+              </h3>
+              <span class="text-[10px] bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full font-mono">${pl.tracks.length} canciones</span>
+            </div>
+            <div class="space-y-1">
+              ${pl.tracks.map(tId => {
+                const tr = TRACKS.find(t => t.id === tId);
+                const trIndex = TRACKS.findIndex(t => t.id === tId);
+                return tr ? `
+                  <div onclick="playTrack(${trIndex})" class="flex justify-between items-center p-2 rounded-xl bg-[#121218] text-xs hover:bg-gray-800 cursor-pointer">
+                    <span class="font-semibold text-gray-200 truncate">${tr.title} - <span class="text-gray-400">${tr.artist}</span></span>
+                    <button onclick="removeTrackFromPlaylist(${pl.id},${tr.id}, event)" class="text-gray-600 hover:text-red-400 text-xs px-1">✕</button>
+                  </div>
+                ` : '';
+              }).join('')}
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function createNewPlaylistPrompt() {
+      const name = prompt("Escribe el nombre de tu nueva Playlist:");
+      if (name && name.trim()) {
+        const newPl = {
+          id: Date.now(),
+          name: name.trim(),
+          tracks: [TRACKS[currentTrackIndex].id]
+        };
+        PLAYLISTS.push(newPl);
+        renderPlaylists();
+        updateUserStats();
+        speakLumi(`¡Playlist "${newPl.name}" creada exitosamente! 🎶`);
+      }
+    }
+
+    function removeTrackFromPlaylist(plId, trackId, event) {
+      event.stopPropagation();
+      const pl = PLAYLISTS.find(p => p.id === plId);
+      if (pl) {
+        pl.tracks = pl.tracks.filter(id => id !== trackId);
+        renderPlaylists();
+      }
+    }
+
+    function renderArtists() {
+      const container = document.getElementById('artists-container');
+      const artistNames = [...new Set(TRACKS.map(t => t.artist))];
+
+      let html = '';
+      artistNames.forEach(artist => {
+        const count = TRACKS.filter(t => t.artist === artist).length;
+        html += `
+          <div class="bg-[#181820] p-4 rounded-2xl border border-gray-800 flex flex-col items-center text-center space-y-2">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-[#5A2A82] to-[#F05A28] flex items-center justify-center text-2xl font-black text-white shadow-md">
+              🎤
+            </div>
+            <div>
+              <h4 class="font-bold text-xs text-white truncate w-28">${artist}</h4>
+              <p class="text-[10px] text-gray-400">${count} ${count === 1 ? 'canción' : 'canciones'}</p>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function renderAlbums() {
+      const container = document.getElementById('albums-container');
+      const albumNames = [...new Set(TRACKS.map(t => t.album || 'Álbum Desconocido'))];
+
+      let html = '';
+      albumNames.forEach(album => {
+        const track = TRACKS.find(t => (t.album || 'Álbum Desconocido') === album);
+        html += `
+          <div class="bg-[#181820] p-3 rounded-2xl border border-gray-800 flex flex-col space-y-2">
+            <div class="w-full h-24 rounded-xl bg-gradient-to-tr ${track ? track.color : 'from-gray-700 to-gray-900'} flex items-center justify-center text-3xl shadow-inner">
+              CD
+            </div>
+            <div>
+              <h4 class="font-bold text-xs text-white truncate">${album}</h4>
+              <p class="text-[10px] text-gray-400 truncate">${track ? track.artist : 'Varios'}</p>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function handleSearch() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const filtered = TRACKS.filter(t => 
+        t.title.toLowerCase().includes(query) || 
+        t.artist.toLowerCase().includes(query) ||
+        t.category.toLowerCase().includes(query)
+      );
+
+      const searchList = document.getElementById('search-results-list');
+      if (filtered.length === 0) {
+        searchList.innerHTML = `<p class="text-xs text-gray-500 text-center py-6">No se encontraron resultados.</p>`;
+        return;
+      }
+
+      let html = '';
+      filtered.forEach((track) => {
+        const trackIndex = TRACKS.findIndex(t => t.id === track.id);
+        html += `
+          <div onclick="playTrack(${trackIndex})" class="flex items-center justify-between p-2.5 rounded-2xl bg-[#1a1a22] hover:bg-[#23232e] cursor-pointer transition">
+            <div class="flex items-center gap-3 overflow-hidden">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr ${track.color} flex justify-center items-center text-white font-bold text-xs flex-shrink-0">
+                🎵
+              </div>
+              <div class="overflow-hidden">
+                <h4 class="text-xs font-bold text-white truncate">${track.title}</h4>
+                <p class="text-[10px] text-gray-400 truncate">${track.artist}</p>
+              </div>
+            </div>
+            <span class="text-[10px] bg-gray-800 text-cyan-300 px-2 py-1 rounded-full flex-shrink-0">${track.category}</span>
+          </div>
+        `;
+      });
+      searchList.innerHTML = html;
+    }
+
+    function filterCategory(cat) {
+      switchTab('buscar');
+      document.getElementById('search-input').value = (cat === 'all') ? '' : cat;
+      handleSearch();
+    }
+
+    let canvas, ctx;
+
+    function initCanvas() {
+      canvas = document.getElementById('canvas-eq');
+      ctx = canvas.getContext('2d');
+      drawVisualizer();
+    }
+
+    function drawVisualizer() {
+      requestAnimationFrame(drawVisualizer);
+      if (!ctx) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const barCount = 18;
+      const barWidth = 7;
+      const gap = 4;
+      const startX = (canvas.width - (barCount * (barWidth + gap))) / 2;
+
+      let dataArray = new Uint8Array(barCount);
+
+      if (isPlaying && analyser) {
+        analyser.getByteFrequencyData(dataArray);
+      }
+
+      for (let i = 0; i < barCount; i++) {
+        let value = isPlaying ? (dataArray[i] || Math.random() * 150 + 50) : 10;
+        let barHeight = (value / 255) * (canvas.height - 20);
+        if (barHeight < 6) barHeight = 6;
+
+        const x = startX + i * (barWidth + gap);
+        const y = canvas.height - barHeight - 10;
+
+        const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+        gradient.addColorStop(0, '#5A2A82');
+        gradient.addColorStop(0.4, '#00A896');
+        gradient.addColorStop(0.8, '#F05A28');
+        gradient.addColorStop(1, '#A81B5A');
+
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.roundRect(x, y, barWidth, barHeight, [4, 4, 0, 0]);
+        ctx.fill();
+      }
+    }
+  </script>
+</body>
+</html>
